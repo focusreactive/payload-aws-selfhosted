@@ -24,14 +24,22 @@ This repository contains a Payload CMS implementation designed for self-hosting 
 - [`/docs/03-aws-deployment-options.md`](./docs/03-aws-deployment-options.md) - Specific AWS deployment methods and configurations
 
 ### Implementation Plans
-- [`/docs/04-aws-ec2-implementation-plan.md`](./docs/04-aws-ec2-implementation-plan.md) - Complete LLM-driven implementation plan for EC2 + S3 + RDS deployment
+- [`/docs/04-aws-ec2-implementation-plan.md`](./docs/04-aws-ec2-implementation-plan.md) - Original implementation plan with current status update
   - **IMPORTANT**: This file contains current AWS resources already deployed (EC2, RDS, S3)
   - **SSH Access**: Instructions for connecting to the EC2 instance are included
+  - **Status**: Updated with completion status and current issues
 
-### Coming Soon (To Be Created)
-- `/docs/environment-setup.md` - Environment variables and configuration
-- `/docs/database-setup.md` - PostgreSQL configuration for AWS RDS
-- `/docs/file-storage-setup.md` - S3 configuration for media uploads
+### Complete Deployment Documentation
+- [`/docs/05-complete-deployment-guide.md`](./docs/05-complete-deployment-guide.md) - **NEW: Comprehensive deployment guide**
+  - **LLM-Ready**: Complete step-by-step instructions for automated deployment
+  - **Troubleshooting**: All issues encountered and their solutions documented
+  - **Production-Ready**: Covers security, SSL configuration, IAM roles, and best practices
+  - **Current Status**: Deployment 95% complete, minor connectivity issue remaining
+
+### Additional Documentation (Future)
+- `/docs/environment-setup.md` - Environment variables and configuration (covered in guide above)
+- `/docs/database-setup.md` - PostgreSQL configuration for AWS RDS (covered in guide above)
+- `/docs/file-storage-setup.md` - S3 configuration for media uploads (covered in guide above)
 - `/docs/docker-deployment.md` - Container deployment instructions
 - `/docs/monitoring-and-logs.md` - CloudWatch and monitoring setup
 
@@ -44,11 +52,21 @@ This repository contains a Payload CMS implementation designed for self-hosting 
 - **Target Platform**: AWS
 
 ### Current AWS Infrastructure
-**IMPORTANT**: The following AWS resources are already deployed and available:
+**IMPORTANT**: The following AWS resources are deployed and configured:
 - **EC2 Instance**: `i-050cf5824f2b89881` (Payload CMS) in eu-north-1
+  - **Status**: ✅ Running with Node.js 20, PM2, Nginx configured
+  - **Public IP**: 16.16.186.128
+  - **Services**: PM2 process manager, Nginx reverse proxy
 - **RDS Database**: `payload-cms-db` (PostgreSQL db.t4g.micro)
-- **S3 Bucket**: `payload-cms-assets-000` (empty, ready for use)
+  - **Status**: ✅ Available with schema created and migrations completed
+  - **Password**: Stored securely in AWS Secrets Manager
+- **S3 Bucket**: `payload-cms-assets-000`
+  - **Status**: ✅ Configured with IAM role access (no access keys needed)
+- **IAM Resources**: PayloadCMSS3Role, PayloadCMSS3Policy, PayloadCMSS3Profile
+  - **Status**: ✅ Configured for secure EC2-to-S3 access
 - **SSH Access**: Available via `~/.ssh/Payload CMS.pem`
+
+**🚨 CURRENT ISSUE**: Application deployed but HTTP connectivity issue prevents web access. See troubleshooting section in complete deployment guide.
 
 For detailed AWS resource information and SSH instructions, see [`/docs/04-aws-ec2-implementation-plan.md`](./docs/04-aws-ec2-implementation-plan.md)
 
