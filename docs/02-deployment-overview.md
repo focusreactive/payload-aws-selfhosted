@@ -167,4 +167,4 @@ If migrating from Payload Cloud:
 - Dependency updates
 
 ## Next Steps
-For AWS-specific deployment instructions, see [`aws-deployment-options.md`](./aws-deployment-options.md)
+For AWS-specific deployment instructions, see [`03-aws-deployment-options.md`](./03-aws-deployment-options.md)

@@ -19,9 +19,14 @@ This repository contains a Payload CMS implementation designed for self-hosting 
 ## Documentation Structure
 
 ### Core Documentation
-- [`/docs/payload-architecture.md`](./docs/payload-architecture.md) - Explains how Payload CMS integrates with Next.js
-- [`/docs/deployment-overview.md`](./docs/deployment-overview.md) - General deployment strategies and Payload Cloud comparison
-- [`/docs/aws-deployment-options.md`](./docs/aws-deployment-options.md) - Specific AWS deployment methods and configurations
+- [`/docs/01-payload-architecture.md`](./docs/01-payload-architecture.md) - Explains how Payload CMS integrates with Next.js
+- [`/docs/02-deployment-overview.md`](./docs/02-deployment-overview.md) - General deployment strategies and Payload Cloud comparison
+- [`/docs/03-aws-deployment-options.md`](./docs/03-aws-deployment-options.md) - Specific AWS deployment methods and configurations
+
+### Implementation Plans
+- [`/docs/04-aws-ec2-implementation-plan.md`](./docs/04-aws-ec2-implementation-plan.md) - Complete LLM-driven implementation plan for EC2 + S3 + RDS deployment
+  - **IMPORTANT**: This file contains current AWS resources already deployed (EC2, RDS, S3)
+  - **SSH Access**: Instructions for connecting to the EC2 instance are included
 
 ### Coming Soon (To Be Created)
 - `/docs/environment-setup.md` - Environment variables and configuration
@@ -37,6 +42,15 @@ This repository contains a Payload CMS implementation designed for self-hosting 
 - **Database**: PostgreSQL (via `@payloadcms/db-postgres`)
 - **Container**: Docker (Dockerfile already configured)
 - **Target Platform**: AWS
+
+### Current AWS Infrastructure
+**IMPORTANT**: The following AWS resources are already deployed and available:
+- **EC2 Instance**: `i-050cf5824f2b89881` (Payload CMS) in eu-north-1
+- **RDS Database**: `payload-cms-db` (PostgreSQL db.t4g.micro)
+- **S3 Bucket**: `payload-cms-assets-000` (empty, ready for use)
+- **SSH Access**: Available via `~/.ssh/Payload CMS.pem`
+
+For detailed AWS resource information and SSH instructions, see [`/docs/04-aws-ec2-implementation-plan.md`](./docs/04-aws-ec2-implementation-plan.md)
 
 ### Essential Commands
 ```bash
