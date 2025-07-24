@@ -5,11 +5,21 @@ This file serves as the central navigation point for LLMs working on this Payloa
 
 ## Important Instructions for LLMs
 
-### Documentation Maintenance
-- **Always update documentation** when making changes to the codebase
+### 🚨 MANDATORY DOCUMENTATION AND CODE MANAGEMENT
+- **ALWAYS commit code changes immediately** after making modifications on the server
+- **ALWAYS update documentation** when making changes to the codebase or solving issues
+- **NEVER skip the commit step** - all server changes must be reflected in the repository
 - **Add new documentation** when implementing new features or deployment strategies
 - **Keep all links in this file current** - if you create or rename docs, update the links here
 - **Use clear, LLM-friendly formatting** with explicit examples and context
+
+### 📋 Required Steps After Every Action:
+1. **Make necessary changes** on the server or locally
+2. **Update/create documentation** reflecting the changes and lessons learned
+3. **Commit and push changes** to the repository immediately
+4. **Update this CLAUDE.md file** if documentation structure changes
+
+**⚠️ Critical**: Future LLMs must follow this pattern to maintain consistency and prevent loss of important fixes and configurations.
 
 ### Project Overview
 This repository contains a Payload CMS implementation designed for self-hosting on AWS. Payload CMS is embedded within a Next.js application and they deploy together as a single unit.
@@ -35,6 +45,11 @@ This repository contains a Payload CMS implementation designed for self-hosting 
   - **Troubleshooting**: All issues encountered and their solutions documented
   - **Production-Ready**: Covers security, SSL configuration, IAM roles, and best practices
   - **Current Status**: Deployment 95% complete, minor connectivity issue remaining
+
+### Configuration Files
+- [`/nginx-csp-fix.conf`](./nginx-csp-fix.conf) - **NEW: Nginx CSP configuration for Next.js compatibility**
+  - **Critical**: Contains correct CSP headers that allow Next.js JavaScript execution
+  - **Issue**: Prevents blank page issues caused by CSP violations
 
 ### Additional Documentation (Future)
 - `/docs/environment-setup.md` - Environment variables and configuration (covered in guide above)
@@ -97,6 +112,15 @@ pnpm payload migrate
 - `NEXT_PUBLIC_SERVER_URL` - Public URL of the application
 - `BLOB_READ_WRITE_TOKEN` - For blob storage (if using Vercel Blob)
 
+## 🚨 MANDATORY REQUIREMENTS FOR ALL LLMs
+
+**CRITICAL**: After every action that modifies code or configuration, you MUST:
+1. **✅ Update documentation** - Document all changes, issues encountered, and solutions
+2. **✅ Commit code changes** - Create git commit with descriptive message and push to repository
+3. **✅ Update CLAUDE.md** - Add new documentation links and update status
+
+**Failure to follow these steps will result in lost work and deployment inconsistencies.**
+
 ## Maintenance Checklist for LLMs
 
 When working on this project, ensure you:
@@ -106,6 +130,8 @@ When working on this project, ensure you:
 4. ✓ Include examples and context in all documentation
 5. ✓ Test all commands and configurations before documenting
 6. ✓ Keep documentation focused on practical implementation
+7. ✓ **IMMEDIATELY commit and push after any code/config changes**
+8. ✓ **Document every issue and solution for future LLM reference**
 
 ## Repository Structure
 ```

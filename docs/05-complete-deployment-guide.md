@@ -382,7 +382,8 @@ server {
     add_header X-XSS-Protection "1; mode=block" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
+    # CRITICAL: CSP that allows Next.js JavaScript execution
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-src 'self'" always;
 
     # Proxy settings
     location / {
@@ -440,7 +441,29 @@ sudo systemctl restart nginx
 3. Use PM2's `wait_ready` option with app signals
 4. Consider switching to production build instead of development mode
 
-### 6.2 Build Process Issue
+### 6.2 Content Security Policy (CSP) Issue
+
+**⚠️ Critical Issue**: Next.js application loads but displays blank pages with CSP violation errors.
+
+**🔍 Root Cause**: Nginx CSP header blocks `'unsafe-eval'` required by Next.js JavaScript execution.
+
+**🚨 Symptoms**:
+- Browser shows blank pages despite HTML loading
+- Console errors: "Refused to execute inline script because it violates the following Content Security Policy"
+- Page title loads but no React components render
+
+**✅ Solution Applied**:
+```bash
+# Fix CSP configuration in Nginx
+sudo sed -i "s/Content-Security-Policy.*$/Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-src 'self'\" always;/" /etc/nginx/sites-available/payload-cms
+
+# Reload Nginx
+sudo systemctl reload nginx
+```
+
+**💡 Key Learning**: Next.js requires `'unsafe-eval'` in CSP for JavaScript compilation and execution.
+
+### 6.3 Build Process Issue
 
 **⚠️ Issue**: Production build (`pnpm build`) fails because database tables don't exist during build-time static generation.
 
