@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "awslabs.aws-api-mcp-server": {
+      "command": "sh",
+      "args": [
+        "-c",
+        "npx dotenv-cli -e .env -e .env.local -- uvx awslabs.aws-api-mcp-server@latest"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
