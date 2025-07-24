@@ -8,6 +8,7 @@ Before starting, ensure you have:
 - AWS CLI configured with appropriate permissions
 - SSH access to AWS infrastructure (EC2, RDS, S3, IAM)
 - Local development environment with required tools
+- **🔐 CRITICAL**: Read `/.deployment-secrets` file for real AWS resource IDs and credentials
 
 ## Current AWS Infrastructure (Pre-deployed)
 - **EC2 Instance**: `i-050cf5824f2b89881` (t3.medium, Ubuntu 24.04.2 LTS)

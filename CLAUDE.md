@@ -13,6 +13,13 @@ This file serves as the central navigation point for LLMs working on this Payloa
 - **Keep all links in this file current** - if you create or rename docs, update the links here
 - **Use clear, LLM-friendly formatting** with explicit examples and context
 
+### 🔐 LLM SECRET ACCESS
+**CRITICAL**: Infrastructure secrets and IDs are stored in `.deployment-secrets` (gitignored)
+- **File Location**: `/.deployment-secrets` - Contains all AWS resource IDs, endpoints, and credentials
+- **Usage**: Read this file first when performing deployment tasks to get real values
+- **Update**: Keep EC2_PUBLIC_IP current when instance restarts
+- **Security**: File is gitignored - never commit secrets to repository
+
 ### 📋 Required Steps After Every Action:
 1. **Make necessary changes** on the server or locally
 2. **Update/create documentation** reflecting the changes and lessons learned
@@ -139,6 +146,9 @@ When working on this project, ensure you:
 ├── src/               # Next.js and Payload source code
 ├── docs/              # Project documentation (maintain this!)
 ├── public/            # Static assets
+├── .deployment-secrets # 🔐 LLM infrastructure secrets (gitignored)
+├── .env               # Application environment variables
+├── .gitignore         # Git ignore rules (includes .deployment-secrets)
 ├── Dockerfile         # Container configuration
 ├── docker-compose.yml # Local development with MongoDB (needs update for PostgreSQL)
 ├── CLAUDE.md          # This file - central LLM guide

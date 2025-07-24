@@ -3,6 +3,8 @@
 ## Overview
 This document outlines the LLM-driven implementation plan for deploying Payload CMS on AWS using the simplest architecture: EC2 + S3 + RDS. This plan is designed for autonomous LLM execution with potential SSH access via MCP.
 
+**🔐 CRITICAL**: All real AWS resource IDs, credentials, and secrets are stored in `/.deployment-secrets` (gitignored). Read this file first to get actual values for deployment tasks.
+
 ## Current AWS Resources (Already Deployed)
 
 ### EC2 Instance
