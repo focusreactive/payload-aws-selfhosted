@@ -14,6 +14,8 @@ This file serves as the central navigation point for LLMs working on this Payloa
 ### Project Overview
 This repository contains a Payload CMS implementation designed for self-hosting on AWS. Payload CMS is embedded within a Next.js application and they deploy together as a single unit.
 
+**Repository**: https://github.com/focusreactive/payload-aws-selfhosted
+
 ## Documentation Structure
 
 ### Core Documentation
