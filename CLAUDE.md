@@ -70,9 +70,9 @@ This repository contains a Payload CMS implementation designed for self-hosting 
 **IMPORTANT**: The following AWS resources are deployed and **FULLY OPERATIONAL**:
 - **EC2 Instance**: `i-050cf5824f2b89881` (Payload CMS) in eu-north-1
   - **Status**: ✅ Running with Node.js 20, PM2, Nginx configured
-  - **Public IP**: 16.16.186.128
+  - **Public IP**: [Check AWS Console for current IP]
   - **Services**: PM2 process manager, Nginx reverse proxy
-  - **Access**: **LIVE** at http://16.16.186.128/
+  - **Access**: **LIVE** at http://[EC2_PUBLIC_IP]/
 - **RDS Database**: `payload-cms-db` (PostgreSQL db.t4g.micro)
   - **Status**: ✅ Available with schema created and migrations completed
   - **Password**: Stored securely in AWS Secrets Manager
@@ -84,9 +84,9 @@ This repository contains a Payload CMS implementation designed for self-hosting 
 - **SSH Access**: Available via `~/.ssh/Payload CMS.pem`
 
 **🌐 LIVE DEPLOYMENT**: Payload CMS successfully deployed and accessible at:
-- **Homepage**: http://16.16.186.128/
-- **Admin Panel**: http://16.16.186.128/admin
-- **API**: http://16.16.186.128/api/*
+- **Homepage**: http://[EC2_PUBLIC_IP]/
+- **Admin Panel**: http://[EC2_PUBLIC_IP]/admin
+- **API**: http://[EC2_PUBLIC_IP]/api/*
 
 For detailed AWS resource information and SSH instructions, see [`/docs/04-aws-ec2-implementation-plan.md`](./docs/04-aws-ec2-implementation-plan.md)
 

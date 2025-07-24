@@ -274,9 +274,9 @@ PAYLOAD_PUBLIC_SERVER_URL=https://your-domain.com
 - **Web Access**: Homepage and admin panel fully accessible ✅ COMPLETE
 
 ### 🌐 LIVE DEPLOYMENT ACCESS
-- **Homepage**: http://16.16.186.128/ ✅ ACCESSIBLE
-- **Admin Panel**: http://16.16.186.128/admin ✅ ACCESSIBLE
-- **API Endpoints**: http://16.16.186.128/api/* ✅ ACCESSIBLE
+- **Homepage**: http://[EC2_PUBLIC_IP]/ ✅ ACCESSIBLE
+- **Admin Panel**: http://[EC2_PUBLIC_IP]/admin ✅ ACCESSIBLE
+- **API Endpoints**: http://[EC2_PUBLIC_IP]/api/* ✅ ACCESSIBLE
 
 ### ⏳ OPTIONAL ENHANCEMENTS (Future Implementation)
 - **SSL Certificate**: Configure HTTPS with Let's Encrypt

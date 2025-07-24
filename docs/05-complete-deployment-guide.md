@@ -238,16 +238,16 @@ pnpm install --frozen-lockfile
 ```bash
 # Generate secure password
 NEW_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-echo "Generated password: $NEW_PASSWORD"  # Example: LFYUu4TA3FnfbNDNv7Dt8xNmS
+echo "Generated password: $NEW_PASSWORD"  # Example: YOUR_GENERATED_PASSWORD
 
 # Store in AWS Secrets Manager
 aws secretsmanager create-secret --name "payload-cms/rds-password" \
   --description "RDS PostgreSQL master password for Payload CMS" \
-  --secret-string '{"username":"postgres","password":"LFYUu4TA3FnfbNDNv7Dt8xNmS","engine":"postgres","host":"payload-cms-db.c7m4gcoy0f52.eu-north-1.rds.amazonaws.com","port":5432,"dbname":"postgres"}'
+  --secret-string '{"username":"postgres","password":"YOUR_GENERATED_PASSWORD","engine":"postgres","host":"payload-cms-db.c7m4gcoy0f52.eu-north-1.rds.amazonaws.com","port":5432,"dbname":"postgres"}'
 
 # Reset RDS password
 aws rds modify-db-instance --db-instance-identifier payload-cms-db \
-  --master-user-password LFYUu4TA3FnfbNDNv7Dt8xNmS --apply-immediately
+  --master-user-password YOUR_GENERATED_PASSWORD --apply-immediately
 ```
 
 ### 4.2 Configure Environment Variables
@@ -263,13 +263,13 @@ PREVIEW_SECRET=$(openssl rand -hex 24)
 # Create production environment file
 cat > .env << EOF
 # Database connection string (PostgreSQL for production)
-DATABASE_URI=postgresql://postgres:LFYUu4TA3FnfbNDNv7Dt8xNmS@payload-cms-db.c7m4gcoy0f52.eu-north-1.rds.amazonaws.com:5432/postgres
+DATABASE_URI=postgresql://postgres:YOUR_GENERATED_PASSWORD@payload-cms-db.c7m4gcoy0f52.eu-north-1.rds.amazonaws.com:5432/postgres
 
 # Used to encrypt JWT tokens (Generated secure 64-character key)
 PAYLOAD_SECRET=$PAYLOAD_SECRET
 
 # Used to configure CORS, format links and more. No trailing slash
-NEXT_PUBLIC_SERVER_URL=http://16.16.186.128:3000
+NEXT_PUBLIC_SERVER_URL=http://YOUR_EC2_PUBLIC_IP:3000
 
 # AWS Configuration for S3 Storage (Using IAM role - no credentials needed)
 AWS_REGION=eu-north-1
@@ -299,7 +299,7 @@ EOF
 
 ```bash
 # Remove SSL parameters from DATABASE_URI
-sed -i 's|DATABASE_URI=.*|DATABASE_URI=postgresql://postgres:LFYUu4TA3FnfbNDNv7Dt8xNmS@payload-cms-db.c7m4gcoy0f52.eu-north-1.rds.amazonaws.com:5432/postgres|' .env
+sed -i 's|DATABASE_URI=.*|DATABASE_URI=postgresql://postgres:YOUR_GENERATED_PASSWORD@payload-cms-db.c7m4gcoy0f52.eu-north-1.rds.amazonaws.com:5432/postgres|' .env
 
 # Update payload.config.ts to handle SSL
 sed -i '/db: postgresAdapter({/,/}),/ {
@@ -491,9 +491,9 @@ sudo systemctl reload nginx
 - Nginx reverse proxy - **COMPLETE AND OPERATIONAL**
 
 **🌐 LIVE ACCESS URLS**:
-- **Public URL**: http://16.16.186.128 ✅ **ACCESSIBLE**
-- **Admin Panel**: http://16.16.186.128/admin ✅ **ACCESSIBLE**
-- **API Endpoints**: http://16.16.186.128/api/* ✅ **ACCESSIBLE**
+- **Public URL**: http://YOUR_EC2_PUBLIC_IP ✅ **ACCESSIBLE**
+- **Admin Panel**: http://YOUR_EC2_PUBLIC_IP/admin ✅ **ACCESSIBLE**
+- **API Endpoints**: http://YOUR_EC2_PUBLIC_IP/api/* ✅ **ACCESSIBLE**
 
 **📊 Final Status**: Payload CMS is successfully deployed and fully operational on AWS EC2.
 
@@ -524,9 +524,9 @@ sudo systemctl reload nginx
 - **Result**: PM2 process stable and responsive
 
 **Final Verification**: ✅ **CONFIRMED**
-- Homepage loads successfully: http://16.16.186.128/
-- Admin panel accessible: http://16.16.186.128/admin
-- API endpoints functional: http://16.16.186.128/api/*
+- Homepage loads successfully: http://YOUR_EC2_PUBLIC_IP/
+- Admin panel accessible: http://YOUR_EC2_PUBLIC_IP/admin
+- API endpoints functional: http://YOUR_EC2_PUBLIC_IP/api/*
 
 ### 8.2 Long-term Improvements
 
