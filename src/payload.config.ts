@@ -62,6 +62,7 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
+      ssl: { rejectUnauthorized: false },
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users],
@@ -78,10 +79,6 @@ export default buildConfig({
       bucket: process.env.S3_BUCKET || 'payload-cms-assets-000',
       config: {
         region: process.env.AWS_REGION || 'eu-north-1',
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-        },
       },
     }),
   ],
