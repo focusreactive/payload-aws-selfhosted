@@ -88,7 +88,41 @@ This repository contains a Payload CMS implementation designed for self-hosting 
   - **Status**: ✅ Configured with IAM role access (no access keys needed)
 - **IAM Resources**: PayloadCMSS3Role, PayloadCMSS3Policy, PayloadCMSS3Profile
   - **Status**: ✅ Configured for secure EC2-to-S3 access
-- **SSH Access**: Available via `~/.ssh/Payload CMS.pem`
+
+### 🔐 SSH Access for LLMs
+**CRITICAL**: LLMs have direct SSH access to the production server:
+
+**First, get the current EC2 public IP:**
+```bash
+# Get EC2 public IP (changes on restart)
+aws ec2 describe-instances --instance-ids i-050cf5824f2b89881 --region eu-north-1 --query "Reservations[0].Instances[0].PublicIpAddress" --output text
+```
+
+**SSH Access Details:**
+- **SSH Command**: `ssh -i ~/.ssh/"Payload CMS.pem" ubuntu@[EC2_PUBLIC_IP]`
+- **Key Location**: `~/.ssh/Payload CMS.pem` (already available locally)
+- **User**: `ubuntu` (NOT `ec2-user`)
+- **Instance ID**: `i-050cf5824f2b89881`
+- **Permissions**: Key has correct 400 permissions
+- **Verified Working**: ✅ Tested and functional
+
+**Common SSH Operations (replace [EC2_PUBLIC_IP] with actual IP):**
+```bash
+# Basic connection test
+ssh -i ~/.ssh/"Payload CMS.pem" ubuntu@[EC2_PUBLIC_IP] "whoami && pwd"
+
+# Check PM2 status
+ssh -i ~/.ssh/"Payload CMS.pem" ubuntu@[EC2_PUBLIC_IP] "cd /opt/payload-app && pm2 status"
+
+# View application logs
+ssh -i ~/.ssh/"Payload CMS.pem" ubuntu@[EC2_PUBLIC_IP] "cd /opt/payload-app && pm2 logs payload-cms --lines 10"
+
+# Restart application
+ssh -i ~/.ssh/"Payload CMS.pem" ubuntu@[EC2_PUBLIC_IP] "cd /opt/payload-app && pm2 restart payload-cms"
+
+# Pull latest code
+ssh -i ~/.ssh/"Payload CMS.pem" ubuntu@[EC2_PUBLIC_IP] "cd /opt/payload-app && git pull origin main"
+```
 
 **🌐 LIVE DEPLOYMENT**: Payload CMS successfully deployed and accessible at:
 - **Homepage**: http://[EC2_PUBLIC_IP]/
@@ -186,11 +220,59 @@ When working on this project, ensure you:
 3. **IAM Roles**: Use instance profiles instead of access keys for S3 access
 4. **PM2 Configuration**: Use .cjs extension for config files to avoid ES module issues
 5. **Import Maps**: Generate import maps for Payload plugins before deployment
-6. **React Hydration**: Payload CMS 3.0 has known compatibility issues with Next.js 15 in production
+6. **React Hydration**: Admin panel hydration requires proper import maps and build configuration
+7. **Development vs Production**: Always verify environment variables match PM2 ecosystem config
+
+## 🔧 Current Admin Panel Issue & Fix Options
+
+### Issue Summary
+- **Homepage & API**: ✅ 100% functional
+- **Admin Panel**: ⚠️ Client-side hydration issue (server renders correctly, client shows blank)
+- **Root Cause**: Configuration mismatch between development/production modes and import map issues
+
+### 🚀 Production Deployment Strategy
+
+**Server Strategy**: Production build only (no development mode)
+**Local Strategy**: Development with `pnpm dev` (no PM2 needed)
+
+#### Complete Production Setup
+```bash
+# Get current IP
+EC2_IP=$(aws ec2 describe-instances --instance-ids i-050cf5824f2b89881 --region eu-north-1 --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+
+# SSH to server
+ssh -i ~/.ssh/"Payload CMS.pem" ubuntu@$EC2_IP
+
+# Build production version
+cd /opt/payload-app
+pnpm build
+
+# Switch to production PM2 config
+pm2 delete payload-cms
+pm2 start ecosystem.config.production.cjs
+
+# Verify production deployment
+pm2 status
+curl localhost:3000/admin
+```
+
+#### Production Environment Details
+- **Build Output**: `.next/standalone/` directory with `server.js`
+- **PM2 Config**: `ecosystem.config.production.cjs` only
+- **Environment**: `NODE_ENV=production`
+- **Static Assets**: Automatically served by standalone build
+
+#### Local Development (No Changes Needed)
+```bash
+# Local development continues as normal
+pnpm dev  # Runs on localhost:3000
+```
 
 ## Notes for Future LLMs
 - This project uses PostgreSQL, not MongoDB (docker-compose.yml needs updating)
 - The Dockerfile is already configured for production builds
 - Focus on AWS-specific configurations and best practices
 - Always consider security implications in deployment strategies
+- **SSH Access**: Always use `ubuntu` user, NOT `ec2-user`
+- **Import Maps**: Critical for Payload CMS 3.0 client-side components
 - **IMPORTANT**: Documentation must be updated after each significant step or completion
