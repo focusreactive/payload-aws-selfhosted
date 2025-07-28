@@ -137,6 +137,7 @@ module.exports = {
 5. **NEVER** skip the static file copy step!
 
 ## 🌐 Current Deployment
-- **Homepage**: http://13.61.178.211/
-- **Admin Panel**: http://13.61.178.211/admin
+- **Homepage**: http://[EC2_PUBLIC_IP]/
+- **Admin Panel**: http://[EC2_PUBLIC_IP]/admin
+- **EC2 IP**: Check `.deployment-secrets` file for current IP
 - **Last Updated**: July 28, 2025

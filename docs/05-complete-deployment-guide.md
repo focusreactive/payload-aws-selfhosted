@@ -435,8 +435,8 @@ sudo systemctl restart nginx
 **🎉 FINAL STATUS**: Payload CMS is **100% operational** on AWS - fully functional in production!
 
 **✅ ALL COMPONENTS WORKING**:
-- ✅ **Homepage**: Fully functional at http://13.61.178.211/
-- ✅ **Admin Panel**: Completely operational at http://13.61.178.211/admin
+- ✅ **Homepage**: Fully functional at http://[EC2_PUBLIC_IP]/
+- ✅ **Admin Panel**: Completely operational at http://[EC2_PUBLIC_IP]/admin
 - ✅ **API Endpoints**: All routes working (e.g., `/api/users/me`, `/api/globals/header`)
 - ✅ **Database Connectivity**: PostgreSQL RDS with SSL working correctly
 - ✅ **S3 Storage**: IAM role-based access configured and operational
