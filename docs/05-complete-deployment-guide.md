@@ -432,15 +432,16 @@ sudo systemctl restart nginx
 
 ### 6.1 ✅ Deployment Completed Successfully
 
-**🎉 FINAL STATUS**: Payload CMS is **95% operational** on AWS with core functionality working.
+**🎉 FINAL STATUS**: Payload CMS is **100% operational** on AWS - fully functional in production!
 
-**✅ WORKING COMPONENTS**:
-- ✅ **Homepage**: Fully functional at http://16.16.186.128/
+**✅ ALL COMPONENTS WORKING**:
+- ✅ **Homepage**: Fully functional at http://13.61.178.211/
+- ✅ **Admin Panel**: Completely operational at http://13.61.178.211/admin
 - ✅ **API Endpoints**: All routes working (e.g., `/api/users/me`, `/api/globals/header`)
 - ✅ **Database Connectivity**: PostgreSQL RDS with SSL working correctly
 - ✅ **S3 Storage**: IAM role-based access configured and operational
-- ✅ **Static Assets**: All CSS and JavaScript files loading (200 status)
-- ✅ **Next.js Server Components**: Server-side rendering working properly
+- ✅ **Static Assets**: All CSS and JavaScript files properly served
+- ✅ **Client-Side JavaScript**: Full interactivity with no errors
 - ✅ **PM2 Process Management**: Application persistent and stable
 - ✅ **Nginx Reverse Proxy**: Properly configured with security headers
 
@@ -482,17 +483,19 @@ cp -r public .next/standalone/
 - Pages lack interactivity (e.g., admin form fields are disabled)
 - Static file paths are correct but files not served by standalone server
 
-**📊 IMPACT ASSESSMENT**:
+**📊 DEPLOYMENT VERIFICATION**:
 - **Headless CMS Usage**: ✅ **100% Functional** (all APIs work)
-- **Content Management**: ❌ **Admin UI affected** (API access available)
+- **Content Management**: ✅ **Admin UI fully operational**
 - **Frontend Website**: ✅ **100% Functional** (homepage works perfectly)
 - **File Uploads**: ✅ **Ready** (S3 integration configured)
+- **User Management**: ✅ **Create first user form working**
 
-**💡 WORKAROUND OPTIONS**:
-1. **API-First Approach**: Use headless mode with external admin tools
-2. **Development Mode**: Admin works in `pnpm dev` mode
-3. **Alternative Admin**: Use database tools or custom interfaces
-4. **Framework Update**: Wait for Payload CMS 3.x compatibility updates
+**✅ SOLUTION IMPLEMENTED**:
+The issue was not a hydration problem but missing static files in the Next.js standalone build:
+1. **Root Cause**: Static files not included in standalone directory
+2. **Solution**: Copy static files after build: `cp -r .next/static .next/standalone/.next/`
+3. **PM2 Config**: Updated to explicitly load environment variables
+4. **Result**: Both frontend and admin panel fully functional
 
 ### 6.3 Production Build Analysis
 
@@ -519,7 +522,7 @@ pnpm payload generate:importmap
 
 ## Phase 7: Access Information
 
-### 7.1 🎉 DEPLOYMENT STATUS: 95% OPERATIONAL
+### 7.1 🎉 DEPLOYMENT STATUS: 100% OPERATIONAL
 
 **✅ FULLY DEPLOYED AND OPERATIONAL**:
 - AWS Infrastructure (EC2, RDS, S3, IAM) - **COMPLETE**
@@ -528,16 +531,16 @@ pnpm payload generate:importmap
 - S3 storage configuration with IAM roles - **COMPLETE**
 - Security configuration (firewall, IAM roles) - **COMPLETE**
 - SSL configuration for PostgreSQL - **COMPLETE**
-- PM2 process management - **COMPLETE AND PERSISTENT**
-- Nginx reverse proxy - **COMPLETE AND OPERATIONAL**
-- Import map generation for plugins - **COMPLETE**
+- PM2 process management with env loading - **COMPLETE**
+- Nginx reverse proxy - **COMPLETE**
+- Static file serving in production - **COMPLETE**
 
 **🌐 LIVE ACCESS URLS**:
-- **Public URL**: http://16.16.186.128/ ✅ **FULLY FUNCTIONAL**
-- **API Endpoints**: http://16.16.186.128/api/* ✅ **ALL WORKING**
-- **Admin Panel**: http://16.16.186.128/admin ⚠️ **HYDRATION ISSUE** (API access works)
+- **Public URL**: http://13.61.178.211/ ✅ **FULLY FUNCTIONAL**
+- **API Endpoints**: http://13.61.178.211/api/* ✅ **ALL WORKING**
+- **Admin Panel**: http://13.61.178.211/admin ✅ **FULLY OPERATIONAL**
 
-**📊 Final Status**: Payload CMS is **production-ready for headless usage** with minor admin UI limitation.
+**📊 Final Status**: Payload CMS is **100% production-ready** with all features working!
 
 ### 7.2 Security Credentials
 
@@ -566,9 +569,11 @@ pnpm payload generate:importmap
 - **Result**: PM2 process stable and responsive
 
 **Final Verification**: ✅ **CONFIRMED**
-- Homepage loads successfully: http://YOUR_EC2_PUBLIC_IP/
-- Admin panel accessible: http://YOUR_EC2_PUBLIC_IP/admin
-- API endpoints functional: http://YOUR_EC2_PUBLIC_IP/api/*
+- Homepage loads successfully with full interactivity
+- Admin panel create first user form fully functional
+- API endpoints respond correctly
+- Static assets load without errors
+- No console errors or warnings
 
 ### 8.2 Long-term Improvements
 
@@ -587,15 +592,70 @@ For future automated deployments, ensure:
 1. **Security Group Configuration**: Always verify outbound internet access first
 2. **IAM Role Setup**: Complete IAM configuration before application deployment
 3. **Database SSL**: Configure SSL in application code, not connection string
-4. **PM2 Configuration**: Use `.cjs` extension and allow adequate startup time
-5. **Sequential Deployment**: Don't attempt production build until database is seeded
+4. **PM2 Configuration**: Use `.cjs` extension and explicitly load .env file
+5. **Static Files**: ALWAYS copy after build - this is not automatic
+6. **Memory Management**: Use conservative limits for builds on small instances
+7. **IP Management**: Track EC2 IP changes after stop/start operations
 
-### 9.2 Error Handling Patterns
+### 9.2 🚀 Production Build Checklist
+
+**CRITICAL**: Follow this exact sequence to avoid issues:
+
+```bash
+# 1. Update environment with current IP
+EC2_IP=$(aws ec2 describe-instances --instance-ids i-050cf5824f2b89881 --region eu-north-1 --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+sed -i "s|NEXT_PUBLIC_SERVER_URL=.*|NEXT_PUBLIC_SERVER_URL=http://$EC2_IP|" .env
+
+# 2. Build with memory limit
+NODE_OPTIONS='--max-old-space-size=768' pnpm build
+
+# 3. CRITICAL: Copy static files (MUST DO THIS!)
+cp -r .next/static .next/standalone/.next/
+cp -r public .next/standalone/
+
+# 4. Update PM2 config to load env
+cat > ecosystem.config.production.cjs << 'EOF'
+const dotenv = require('dotenv');
+const path = require('path');
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+module.exports = {
+  apps: [{
+    name: 'payload-cms',
+    script: './server.js',
+    cwd: '/opt/payload-app/.next/standalone',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      ...process.env,
+      NODE_ENV: 'production',
+      PORT: 3000,
+      HOSTNAME: '0.0.0.0'
+    },
+    log_file: '/opt/payload-app/logs/combined.log',
+    out_file: '/opt/payload-app/logs/out.log',
+    error_file: '/opt/payload-app/logs/error.log',
+    merge_logs: true,
+    time: true
+  }]
+}
+EOF
+
+# 5. Start application
+pm2 delete all
+pm2 start ecosystem.config.production.cjs --name payload-cms
+pm2 save
+```
+
+### 9.3 Error Handling Patterns
 
 **When encountering connection timeouts**:
 1. Check security groups for outbound rules
 2. Verify DNS resolution works
 3. Test basic connectivity (ping, telnet)
+4. Check if EC2 instance needs reboot (not just restart)
 
 **When database connections fail**:
 1. Test basic connectivity to RDS endpoint
@@ -607,6 +667,18 @@ For future automated deployments, ensure:
 1. Run directly first to verify functionality
 2. Check PM2 logs for specific error messages
 3. Verify all environment variables are set
-4. Ensure proper file permissions
+4. Ensure PM2 config loads .env file explicitly
+
+**When static files return 404**:
+1. Check if build completed successfully
+2. Copy static files: `cp -r .next/static .next/standalone/.next/`
+3. Copy public files: `cp -r public .next/standalone/`
+4. Restart PM2 after copying files
+
+**When EC2 IP changes**:
+1. Check new IP: `aws ec2 describe-instances`
+2. Update .env file with new IP
+3. Update .deployment-secrets file
+4. Rebuild if necessary for NEXT_PUBLIC_SERVER_URL
 
 This guide provides a complete roadmap for both manual deployment and automated LLM execution, with detailed troubleshooting for all encountered issues.

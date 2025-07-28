@@ -47,11 +47,16 @@ This repository contains a Payload CMS implementation designed for self-hosting 
   - **Status**: Updated with completion status and current issues
 
 ### Complete Deployment Documentation
-- [`/docs/05-complete-deployment-guide.md`](./docs/05-complete-deployment-guide.md) - **NEW: Comprehensive deployment guide**
+- [`/docs/05-complete-deployment-guide.md`](./docs/05-complete-deployment-guide.md) - **Comprehensive deployment guide**
   - **LLM-Ready**: Complete step-by-step instructions for automated deployment
   - **Troubleshooting**: All issues encountered and their solutions documented
   - **Production-Ready**: Covers security, SSL configuration, IAM roles, and best practices
-  - **Current Status**: Deployment 95% complete, minor connectivity issue remaining
+  - **Current Status**: ✅ Deployment 100% complete - fully operational
+- [`/docs/06-production-quick-start.md`](./docs/06-production-quick-start.md) - **NEW: Quick deployment reference**
+  - **Quick Reference**: Exact commands for production deployment
+  - **Common Fixes**: Solutions for frequent issues
+  - **Critical Steps**: Highlights must-do steps like static file copying
+  - **Current IPs**: Updated with latest EC2 public IP
 
 ### Configuration Files
 - [`/nginx-csp-fix.conf`](./nginx-csp-fix.conf) - **NEW: Nginx CSP configuration for Next.js compatibility**
@@ -77,7 +82,7 @@ This repository contains a Payload CMS implementation designed for self-hosting 
 **IMPORTANT**: The following AWS resources are deployed and **FULLY OPERATIONAL**:
 - **EC2 Instance**: `i-050cf5824f2b89881` (Payload CMS) in eu-north-1
   - **Status**: ✅ Running with Node.js 20, PM2, Nginx configured
-  - **Public IP**: [Check AWS Console for current IP]
+  - **Public IP**: 13.61.178.211 (⚠️ Changes after stop/start - check AWS console)
   - **Services**: PM2 process manager, Nginx reverse proxy
   - **Access**: **LIVE** at http://[EC2_PUBLIC_IP]/
 - **RDS Database**: `payload-cms-db` (PostgreSQL db.t4g.micro)
@@ -189,78 +194,106 @@ When working on this project, ensure you:
 └── package.json       # Dependencies and scripts
 ```
 
-## 🎉 DEPLOYMENT STATUS: 95% OPERATIONAL
+## 🎉 DEPLOYMENT STATUS: 100% OPERATIONAL
 
-**Final Status**: Payload CMS successfully deployed to AWS with core functionality operational.
+**Final Status**: Payload CMS successfully deployed to AWS - fully functional in production!
 
-**✅ Fully Working Components**:
-- ✅ **Homepage & Frontend**: Complete functionality at http://16.16.186.128/
+**✅ All Components Working**:
+- ✅ **Homepage & Frontend**: Complete functionality at http://13.61.178.211/
+- ✅ **Admin Panel**: Fully operational at http://13.61.178.211/admin
 - ✅ **API Endpoints**: All REST/GraphQL APIs working perfectly
 - ✅ **Database**: PostgreSQL RDS with SSL configuration
 - ✅ **File Storage**: S3 integration with IAM roles (no credentials needed)
 - ✅ **Infrastructure**: EC2, RDS, S3, IAM fully deployed and secure
 - ✅ **Process Management**: PM2 with persistence and auto-restart
 - ✅ **Reverse Proxy**: Nginx with security headers and CSP
-
-**⚠️ Known Limitation (5%)**:
-- **Admin Panel UI**: React hydration issue in production mode
-  - **Root Cause**: Payload CMS 3.0 + Next.js 15 compatibility issue
-  - **Workaround**: API access works, headless usage fully functional
-  - **Alternative**: Admin panel works in development mode
+- ✅ **Static Files**: Properly served in production standalone build
 
 **📊 Production Readiness**:
 - **Headless CMS**: ✅ 100% ready for production use
 - **Content API**: ✅ All endpoints operational
 - **File Uploads**: ✅ S3 storage configured and ready
-- **Admin Interface**: ⚠️ Limited to API access (UI needs framework updates)
+- **Admin Interface**: ✅ Fully functional with all features
 
 **Critical Lessons Learned for Future LLMs**:
 1. **SSL Configuration**: Always configure SSL in payload.config.ts, not connection strings
 2. **Security Groups**: Ensure outbound internet access for package installation
 3. **IAM Roles**: Use instance profiles instead of access keys for S3 access
-4. **PM2 Configuration**: Use .cjs extension for config files to avoid ES module issues
-5. **Import Maps**: Generate import maps for Payload plugins before deployment
-6. **React Hydration**: Admin panel hydration requires proper import maps and build configuration
-7. **Development vs Production**: Always verify environment variables match PM2 ecosystem config
+4. **PM2 Configuration**: Use .cjs extension and load .env file explicitly in production
+5. **Static Files**: MUST copy static files after build: `cp -r .next/static .next/standalone/.next/`
+6. **EC2 IP Changes**: Public IP changes after stop/start (not reboot) - always check current IP
+7. **Build Memory**: Use conservative memory limits on small instances: `NODE_OPTIONS='--max-old-space-size=768'`
+8. **Environment Variables**: PM2 production config must explicitly load .env file
 
-## 🔧 Current Admin Panel Issue & Fix Options
+## 🚀 Production Deployment Strategy
 
-### Issue Summary
-- **Homepage & API**: ✅ 100% functional
-- **Admin Panel**: ⚠️ Client-side hydration issue (server renders correctly, client shows blank)
-- **Root Cause**: Configuration mismatch between development/production modes and import map issues
-
-### 🚀 Production Deployment Strategy
-
-**Server Strategy**: Production build only (no development mode)
-**Local Strategy**: Development with `pnpm dev` (no PM2 needed)
-
-#### Complete Production Setup
+### ✅ Complete Production Setup
 ```bash
-# Get current IP
+# Get current IP (⚠️ IP changes after stop/start)
 EC2_IP=$(aws ec2 describe-instances --instance-ids i-050cf5824f2b89881 --region eu-north-1 --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
 
 # SSH to server
 ssh -i ~/.ssh/"Payload CMS.pem" ubuntu@$EC2_IP
 
-# Build production version
+# Update environment with new IP if needed
 cd /opt/payload-app
-pnpm build
+sed -i "s|NEXT_PUBLIC_SERVER_URL=.*|NEXT_PUBLIC_SERVER_URL=http://$EC2_IP|" .env
 
-# Switch to production PM2 config
-pm2 delete payload-cms
-pm2 start ecosystem.config.production.cjs
+# Build production version (with memory limit for small instances)
+NODE_OPTIONS='--max-old-space-size=768' pnpm build
 
-# Verify production deployment
+# CRITICAL: Copy static files to standalone directory
+cp -r .next/static .next/standalone/.next/
+cp -r public .next/standalone/
+
+# Start with production PM2 config
+pm2 delete all
+pm2 start ecosystem.config.production.cjs --name payload-cms
+pm2 save
+
+# Verify deployment
 pm2 status
+curl localhost:3000
 curl localhost:3000/admin
 ```
 
-#### Production Environment Details
-- **Build Output**: `.next/standalone/` directory with `server.js`
-- **PM2 Config**: `ecosystem.config.production.cjs` only
-- **Environment**: `NODE_ENV=production`
-- **Static Assets**: Automatically served by standalone build
+### 📋 Required PM2 Production Config (ecosystem.config.production.cjs)
+```javascript
+const dotenv = require('dotenv');
+const path = require('path');
+
+// Load environment variables from parent directory
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+module.exports = {
+  apps: [{
+    name: 'payload-cms',
+    script: './server.js',
+    cwd: '/opt/payload-app/.next/standalone',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      ...process.env,
+      NODE_ENV: 'production',
+      PORT: 3000,
+      HOSTNAME: '0.0.0.0'
+    },
+    log_file: '/opt/payload-app/logs/combined.log',
+    out_file: '/opt/payload-app/logs/out.log',
+    error_file: '/opt/payload-app/logs/error.log',
+    merge_logs: true,
+    time: true
+  }]
+}
+```
+
+### ⚠️ Critical Production Notes
+1. **Static Files**: MUST copy after every build - Next.js standalone doesn't include them
+2. **Environment Variables**: PM2 config must explicitly load .env file
+3. **Memory Limits**: Use conservative limits on t3.medium instances
+4. **IP Changes**: EC2 public IP changes after stop/start - update .env accordingly
 
 #### Local Development (No Changes Needed)
 ```bash
@@ -269,10 +302,30 @@ pnpm dev  # Runs on localhost:3000
 ```
 
 ## Notes for Future LLMs
-- This project uses PostgreSQL, not MongoDB (docker-compose.yml needs updating)
-- The Dockerfile is already configured for production builds
-- Focus on AWS-specific configurations and best practices
-- Always consider security implications in deployment strategies
-- **SSH Access**: Always use `ubuntu` user, NOT `ec2-user`
-- **Import Maps**: Critical for Payload CMS 3.0 client-side components
-- **IMPORTANT**: Documentation must be updated after each significant step or completion
+
+### 🎯 Key Success Factors
+1. **Static Files**: After `pnpm build`, ALWAYS copy: `cp -r .next/static .next/standalone/.next/`
+2. **PM2 Config**: Must explicitly load .env file in production mode
+3. **EC2 IP**: Changes after stop/start - always verify current IP
+4. **Memory**: Use `NODE_OPTIONS='--max-old-space-size=768'` for builds on small instances
+5. **SSH**: Always use `ubuntu` user, NOT `ec2-user`
+
+### 📋 Common Issues & Solutions
+- **Blank pages/404 JS files**: Copy static files to standalone directory
+- **502 errors**: Check PM2 logs, ensure .env is loaded
+- **Build failures**: Reduce memory allocation, clear .next directory
+- **Connection timeouts**: Check security groups for outbound rules
+- **Database SSL errors**: Configure SSL in payload.config.ts, not connection string
+
+### 🚀 Quick Deployment Checklist
+1. ✓ Pull latest code: `git pull origin main`
+2. ✓ Update .env with current EC2 IP
+3. ✓ Build with memory limit: `NODE_OPTIONS='--max-old-space-size=768' pnpm build`
+4. ✓ Copy static files: `cp -r .next/static .next/standalone/.next/`
+5. ✓ Start PM2: `pm2 start ecosystem.config.production.cjs --name payload-cms`
+6. ✓ Verify: Access http://[EC2_IP]/ and /admin
+
+### 📝 Documentation Requirements
+- **ALWAYS** update docs after solving issues
+- **ALWAYS** commit and push changes immediately
+- **ALWAYS** update CLAUDE.md with new learnings
