@@ -330,24 +330,26 @@ pnpm payload migrate
 
 ### 5.1 Configure PM2 Process Manager
 
+**🎯 Production Configuration** (Recommended):
+
 ```bash
 cd /opt/payload-app
 
-# Create PM2 ecosystem configuration
-cat > ecosystem.config.cjs << 'EOF'
+# Create production PM2 ecosystem configuration
+cat > ecosystem.config.production.cjs << 'EOF'
 module.exports = {
   apps: [{
     name: 'payload-cms',
-    script: 'pnpm',
-    args: 'dev',
-    cwd: '/opt/payload-app',
+    script: './server.js',
+    cwd: '/opt/payload-app/.next/standalone',
     instances: 1,
     autorestart: true,
     watch: false,
     max_memory_restart: '1G',
     env: {
-      NODE_ENV: 'development',
-      PORT: 3000
+      NODE_ENV: 'production',
+      PORT: 3000,
+      HOSTNAME: '0.0.0.0'
     },
     log_file: '/opt/payload-app/logs/combined.log',
     out_file: '/opt/payload-app/logs/out.log',
@@ -361,12 +363,26 @@ EOF
 # Create logs directory
 mkdir -p logs
 
+# Build production version
+pnpm build
+
+# Copy static files to standalone directory
+cp -r .next/static .next/standalone/.next/
+cp -r public .next/standalone/
+
 # Start application with PM2
-pm2 start ecosystem.config.cjs
+pm2 start ecosystem.config.production.cjs
 ```
 
-**⚠️ Issue**: Initially used `.js` extension which failed due to ES modules.
-**✅ Solution**: Use `.cjs` extension for PM2 configuration files.
+**⚠️ Issues Encountered**:
+1. Initially used `.js` extension which failed due to ES modules → Use `.cjs`
+2. Development mode (`pnpm dev`) works but isn't optimal for production
+3. Static files not served in standalone build → Must copy manually
+
+**✅ Key Points**:
+- Use production build with standalone output for better performance
+- Static files must be copied after each build
+- PM2 configuration points to `.next/standalone/server.js`
 
 ### 5.2 Configure Nginx Reverse Proxy
 
@@ -433,30 +449,38 @@ sudo systemctl restart nginx
 - File uploads: S3 integration ready
 - Production infrastructure: Fully deployed and stable
 
-### 6.2 ⚠️ Admin Panel React Hydration Issue (5% Remaining)
+### 6.2 ⚠️ Production Build Static File Issues
 
-**🔍 CURRENT LIMITATION**: Admin panel `/admin` has client-side React hydration problems.
+**🔍 CURRENT STATUS**: Both root page and admin panel load, but JavaScript files return 404 errors in production standalone build.
 
 **📋 TECHNICAL ANALYSIS**:
 - ✅ **Server-Side Rendering**: HTML generated correctly by Next.js RSC
-- ✅ **Static Assets**: All JavaScript bundles load with 200 status
+- ✅ **Page Content**: Both root page and admin panel HTML render properly
 - ✅ **API Connectivity**: Backend APIs (`/api/users/me`) respond correctly
-- ✅ **Redirect Logic**: App correctly tries to redirect `/admin` → `/admin/login`
-- ❌ **Client Hydration**: React components don't mount on client side
-- ❌ **React Root Missing**: No `__next` or React root elements in DOM
+- ✅ **PM2 Process**: Application runs successfully with production config
+- ❌ **Static Files**: JavaScript bundles return 404 errors
+- ❌ **Client Interactivity**: No client-side JavaScript functionality due to missing files
 
 **🔍 ROOT CAUSE IDENTIFIED**:
-This is a **known compatibility issue** between:
-- Payload CMS 3.0 (uses React Server Components)
-- Next.js 15.3.3 (latest RSC implementation)
-- Production build mode with standalone output
+Next.js standalone builds require proper static file handling:
+1. Static files need to be copied to `.next/standalone/.next/static`
+2. Public files need to be copied to `.next/standalone/public`
+3. PM2 configuration must point to the correct server.js location
+
+**💡 SOLUTION**:
+After building production version with `pnpm build`:
+```bash
+# Copy static files to standalone directory
+cp -r .next/static .next/standalone/.next/
+cp -r public .next/standalone/
+```
 
 **🚨 SYMPTOMS OBSERVED**:
-- HTML loads correctly with all styles
-- JavaScript bundles download successfully
-- Console shows no errors
-- React hydration fails silently
-- Admin interface appears blank despite full HTML structure
+- HTML loads correctly with proper structure
+- JavaScript files return 404 errors in browser console
+- Console shows "Refused to execute script" errors
+- Pages lack interactivity (e.g., admin form fields are disabled)
+- Static file paths are correct but files not served by standalone server
 
 **📊 IMPACT ASSESSMENT**:
 - **Headless CMS Usage**: ✅ **100% Functional** (all APIs work)
